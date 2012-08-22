@@ -40,7 +40,7 @@ object Runner {
 
 
 
-	  Database.forURL("jdbc:mysql://127.0.0.1:3306/liga?user=root&password=fatpera", driver = "com.mysql.jdbc.Driver") withSession {
+	  Database.forURL("jdbc:mysql://127.0.0.1:3306/liga?user=root&password=ginormous", driver = "com.mysql.jdbc.Driver") withSession {
 	  Q.queryNA[Match]("select home, away, home_goals, away_goals from liga.match where year=2010 and week=1 and league=1") foreach { println }
 
   }
