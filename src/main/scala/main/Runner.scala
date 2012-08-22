@@ -4,20 +4,22 @@ import scala.slick.session.Database
 import Database.threadLocalSession
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
 import Q.interpolation
-
 import domain.Match
 import domain.Team
-
-
 import java.sql.{DriverManager, Connection}
+import com.typesafe.config.ConfigFactory
 
 object Runner {
 
-  def main(args: Array[String]): Unit = {
-    println("in Runner")
-    testDatabase
-  }
+	var conf = ConfigFactory.load
+	lazy val dbURL = conf.getString("db.url")
+	
+	def main(args: Array[String]): Unit = {
+		println("in Runner")
+        testDatabase
+	}
   
+
   def testDatabase() {
 	  println("Running database connectivity tests")
 
@@ -40,7 +42,7 @@ object Runner {
 
 
 
-	  Database.forURL("jdbc:mysql://127.0.0.1:3306/liga?user=root&password=ginormous", driver = "com.mysql.jdbc.Driver") withSession {
+	  Database.forURL(dbURL, driver = "com.mysql.jdbc.Driver") withSession {
 	  Q.queryNA[Match]("select home, away, home_goals, away_goals from liga.match where year=2010 and week=1 and league=1") foreach { println }
 
   }
