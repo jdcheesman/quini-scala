@@ -4,6 +4,8 @@
 .classpath
 .project
 
+# secret stuff
+src/main/resources/application.conf
 
 # sbt specific
 dist/*
