@@ -1,6 +1,7 @@
 package domain
 
-class Match(ht: Team, at: Team, homeScore: Int, awayScore: Int) {
+
+case class Match(ht: Team, at: Team, homeScore: Int, awayScore: Int) {
   val homeTeam = ht
   val awayTeam = at
   
@@ -12,4 +13,5 @@ class Match(ht: Team, at: Team, homeScore: Int, awayScore: Int) {
   def homeGoals(): Int = homeScore
   def awayGoals(): Int = awayScore
   
+  override def toString = { homeTeam + " " + homeScore + " - " + awayTeam + " " + awayScore} 
 }
