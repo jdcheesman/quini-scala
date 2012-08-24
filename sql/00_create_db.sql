@@ -16,3 +16,13 @@ CREATE TABLE `match` (
   KEY `ix_year_week` (`year`,`week`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10518 DEFAULT CHARSET=utf8$$
 
+
+CREATE TABLE `standing` (
+  `year` int(11) NOT NULL,
+  `week` int(11) NOT NULL,
+  `league` int(11) NOT NULL,
+  `team` varchar(45) NOT NULL,
+  `points` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`year`,`week`,`league`,`team`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8$$
+
