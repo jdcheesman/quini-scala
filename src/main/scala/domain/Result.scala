@@ -1,3 +1,5 @@
 package domain
 
-trait Result {}
+trait Result {
+  def asQuiniela: Int
+}

@@ -5,13 +5,13 @@ import domain.Match
 import domain.Result
 
 object AllGoals extends Indicator {
-  def calculate(homeTeam: Team, homeTeamMatches: List[Match], awayTeam: Team, awayTeamMatches: List[Match]): Result = {
+  def calculate(homeTeam: Team, awayTeam: Team, matches: List[Match]): Result = {
     
-    val homeTeamWinsAtHome = getHomeWins(homeTeamMatches, homeTeam)
-    val homeTeamWinsAway = getAwayWins(homeTeamMatches, homeTeam)
-    val awayTeamWinsAtHome = getHomeWins(awayTeamMatches, awayTeam)
-    val awayTeamWinsAway = getAwayWins(awayTeamMatches, awayTeam)
-    val draws = getDraws(homeTeamMatches, homeTeam) + getDraws(awayTeamMatches, awayTeam)
+    val homeTeamWinsAtHome = getHomeWins(matches, homeTeam)
+    val homeTeamWinsAway = getAwayWins(matches, homeTeam)
+    val awayTeamWinsAtHome = getHomeWins(matches, awayTeam)
+    val awayTeamWinsAway = getAwayWins(matches, awayTeam)
+    val draws = getDraws(matches, homeTeam) + getDraws(matches, awayTeam)
     
     getPrediction(homeTeamWinsAtHome+homeTeamWinsAway, draws, awayTeamWinsAtHome+awayTeamWinsAway)
   }

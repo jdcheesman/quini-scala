@@ -7,11 +7,11 @@ import domain.Team
 
 object HomeAwayWins extends Indicator {
   
-  def calculate(homeTeam: Team, homeTeamMatches: List[Match], awayTeam: Team, awayTeamMatches: List[Match]): Result = {
+  def calculate(homeTeam: Team, awayTeam: Team, matches: List[Match]): Result = {
     
-    val homeWins = getHomeWins(homeTeamMatches, homeTeam)
-    val awayWins = getAwayWins(awayTeamMatches, awayTeam)
-    val draws = getDraws(homeTeamMatches, homeTeam) + getDraws(awayTeamMatches, awayTeam)
+    val homeWins = getHomeWins(matches, homeTeam)
+    val awayWins = getAwayWins(matches, awayTeam)
+    val draws = getDraws(matches, homeTeam) + getDraws(matches, awayTeam)
     getPrediction(homeWins, draws, awayWins)
   }
   
