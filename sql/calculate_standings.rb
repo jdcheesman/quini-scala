@@ -12,7 +12,7 @@ begin
  dbh = Mysql.real_connect("localhost", "root", "fatpera", "liga")
 
 
- res = dbh.query("SELECT home, away, home_goals, away_goals, week, league FROM liga.match where year=2010 order by week, league")
+ res = dbh.query("SELECT home, away, home_goals, away_goals, week, league FROM liga.match where year=" + year.to_s + " order by week, league")
 
  results = Hash[]
 
