@@ -1,5 +1,5 @@
 package domain
 
 case class Draw() extends Result {
-  def asQuiniela = 0
+  //def asQuiniela = 0
 }
