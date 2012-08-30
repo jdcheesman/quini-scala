@@ -1,5 +1,5 @@
 package domain
 
 trait Result {
-  //def asQuiniela: Int
+  def asQuiniela: Int
 }

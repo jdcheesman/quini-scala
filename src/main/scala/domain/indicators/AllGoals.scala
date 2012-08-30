@@ -4,7 +4,8 @@ import domain.Team
 import domain.Match
 import domain.Result
 
-object AllGoals extends Indicator {
+case class AllGoals(ad: Double, ah: Double, dh: Double) extends Indicator(ad,ah,dh, "allGoals") {
+  
   def calculate(homeTeam: Team, awayTeam: Team, matches: List[Match]): Result = {
     
     val homeTeamWinsAtHome = getHomeWins(matches, homeTeam)

@@ -1,5 +1,5 @@
 package domain
 
 case class AwayWin() extends Result {
-  //def asQuiniela = 1
+  def asQuiniela = 1
 }
