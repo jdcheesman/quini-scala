@@ -8,6 +8,7 @@ import domain.Result
 import domain.Statistic
 import domain.Team
 
+
 abstract class Indicator(ad: Double, ah: Double, dh: Double, n: String) {
   val awayDraw = ad
   val awayHome = ah

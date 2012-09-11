@@ -2,23 +2,32 @@ package main
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
-
 import com.typesafe.config.ConfigFactory
-
 import domain.CumulativeStatistic
 import domain.Match
 import domain.Statistic
 import domain.Team
-import domain.Week
 import domain.indicators.AllGoals
 import domain.indicators.AllWins
 import domain.indicators.HomeAwayGoals
 import domain.indicators.HomeAwayWins
 import domain.indicators.PointsPredictorDifference
 import domain.indicators.PointsPredictorRatio
+import domain.indicators.Configuration
+import akka.actor.ActorSystem
+import akka.actor.Props
+import domain.indicators.actors.AllWinsActor
+import scala.concurrent.Await
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.util.duration._
+import scala.concurrent.Await
+
 
 object Runner {
 
+  implicit val timeout = Timeout(5 seconds) // needed for `?` below
+  
 	var conf = ConfigFactory.load
 	lazy val dbURL = conf.getString("db.url")
 
@@ -26,35 +35,53 @@ object Runner {
 
 	def main(args: Array[String]): Unit = {
 		loader.testDatabase
-		run
+		//run
+		runActors()
+		println("ending main")
 	}
 
+	def runActors() {
+		val system = ActorSystem("MySystem")
+		val allWinsActor = system.actorOf(Props[AllWinsActor], name = "allWinsActor")
+
+		val future = allWinsActor ? "start"
+		val result = Await.result(future, timeout.duration).asInstanceOf[Configuration]
+		println("Best allWins: " + result)
+		
+		
+		system shutdown
+		
+	}
 
 
 	def run() {
 
+
+	  val allWinsConfig = new Configuration(0.8,0.5,0.6)
+	  val homeAwayWinsConfig = new Configuration(0.8,0.5,0.6)
+	  val allGoalsConfig = new Configuration(0.8,0.5,0.6)
+	  val homeAwayGoalsConfig = new Configuration(0.8,0.5,0.6)
+	  
 		val year = 2009
-		for (league <- 1 to 1) {
+		for (league <- 1 to 2) {
 			println("LEAGUE: " + league)
 			val fullResults = Map[String, ListBuffer[CumulativeStatistic]]()
-			for (w <- 6 to 38) {
-				val currentWeek = new Week(year, w)
-				//val league = 1
-
-				val matches = loader.getMatches(year, currentWeek.week: Int, league)
+			for (week <- 6 to 38) {
+				val matches = loader.getMatches(year, week: Int, league)
 				val weeksResults = Map[String, CumulativeStatistic]()
 
 				
 				matches.toList.foreach(m => {
-					val matches = loader.getListPreviousMatches(year, league, currentWeek.week, m)  
-					val points = loader.getListPoints(year, league, currentWeek.week, m)  
-					val res = calculateResultByMatches(year, league, currentWeek.week, m, matches) ::: calculateResultByPoints(year, league, currentWeek.week, m, points)
-					res.foreach(s => {
-						val cumStat = weeksResults.getOrElse(s.name, new CumulativeStatistic(s.name))
-						cumStat.addStatistic(s)
-						weeksResults(s.name) = cumStat
-					})
+					val matches = loader.getListPreviousMatches(year, league, week, m)  
+					val points = loader.getListPoints(year, league, week, m)  
+					addStat(AllWins(allWinsConfig).run(matches, m), weeksResults)
+					addStat(HomeAwayWins(homeAwayWinsConfig).run(matches, m), weeksResults)
+					addStat(AllGoals(allGoalsConfig).run(matches, m), weeksResults)
+					addStat(HomeAwayGoals(homeAwayGoalsConfig).run(matches, m), weeksResults)
+					addStat(PointsPredictorRatio("pointsPredictorRatio", 0.25).run(points, m), weeksResults)
+					addStat(PointsPredictorDifference("pointsPredictorDifference", 5).run(points.toList, m), weeksResults)
 				})
+				
 
 				weeksResults.foreach(v => {
 					val cumStat = v._2
@@ -75,26 +102,10 @@ object Runner {
 		println(pad(stats(0).name) + "\t" + round(sumSingle) + "\t" + round(sumCumul))
 	}
 
-	private def calculateResultByMatches(year: Int, league:Int, currentWeek: Int,  m: domain.Match, matches: List[Match]): List[Statistic] = {
-		val allWinsStatistic = AllWins(0.8,0.5,0.6).run(matches, m)
-		val homeAwayWinsStatistic = HomeAwayWins(0.8,0.5,0.6).run(matches, m)
-		val allGoalsStatistic = AllGoals(0.8,0.5,0.6).run(matches, m)
-		val homeAwayGoalsStatistic = HomeAwayGoals(0.8,0.5,0.6).run(matches, m)
-
-		allWinsStatistic :: homeAwayWinsStatistic :: allGoalsStatistic :: homeAwayGoalsStatistic :: Nil
-	}
-
-
-
-	
-	private def calculateResultByPoints(year: Int, league:Int, currentWeek: Int,  m: domain.Match, points: List[Team]): List[Statistic] = {
-		val deltaRatio = 0.25
-		val ratioStatistic = PointsPredictorRatio("pointsPredictorRatio", deltaRatio).run(points, m)
-
-		val deltaDifference = 5
-		val differenceStatistic = PointsPredictorDifference("pointsPredictorDifference", deltaDifference).run(points.toList, m)
-
-		ratioStatistic :: differenceStatistic :: Nil
+	private def addStat(stat: Statistic, weeksResults: Map[String, CumulativeStatistic]) = {
+		val cumStat = weeksResults.getOrElse(stat.name, new CumulativeStatistic(stat.name))
+		cumStat.addStatistic(stat)
+		weeksResults(stat.name) = cumStat
 	}
 	
   def pad(s: String): String = {
